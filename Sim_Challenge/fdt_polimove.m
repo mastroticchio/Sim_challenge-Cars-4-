@@ -6,7 +6,9 @@
 %
 % Per ogni velocita' di linearizzazione v0 in V0 crea nel workspace:
 %   LAT(k).Gr      r/delta            [(rad/s)/rad]  bicicletta 2 stati + ritardo sterzo
-%   LAT(k).Gay     ay/delta           [(m/s^2)/rad]
+%   LAT(k).Gay     ay/delta           [(m/s^2)/rad]  ay = ACCELERAZIONE laterale (non l'errore)
+%   LAT(k).Gepsi  e_psi/delta        [rad/rad]  errore di direzione = Gr/s   (riferimento dritto)
+%   LAT(k).Gey     e_y/delta          [m/rad]    errore laterale = Gay/s^2    (riferimento dritto)
 %   LAT(k).Gbeta   beta/delta         [rad/rad]
 %   LAT(k).Gr_rel  r/delta con rilassamento pneumatici (4 stati) + ritardo
 %   LAT(k).Gr_dp   r/delta come ritardo puro + polo singolo (modello del collega, da E6)
@@ -126,6 +128,9 @@ for k = 1:numel(V0)
     LAT(k).v = v;  LAT(k).Cf = Cf;  LAT(k).Cr = Cr;  LAT(k).K_us = m/P.L*(b/Cf - a/Cr); %#ok<SAGROW>
     LAT(k).Gr = Gl(1,1);  LAT(k).Gay = Gl(2,1);  LAT(k).Gbeta = Gl(3,1);
     [LAT(k).num, LAT(k).den] = tfdata(LAT(k).Gr, 'v');
+    % errori rispetto a un riferimento DRITTO (angoli piccoli): e_psi' = r, e_y'' = a_y
+    LAT(k).Gepsi = LAT(k).Gr / s;          % errore di direzione / delta   [rad/rad]
+    LAT(k).Gey   = LAT(k).Gay / s^2;       % errore laterale / delta       [m/rad]
     tau = X.sigma/v;                                   % rilassamento: stati [vy r alpha_f alpha_r]
     A4 = [ 0, -v, Cf/m, Cr/m;
            0,  0, a*Cf/Iz, -b*Cr/Iz;
@@ -172,6 +177,8 @@ for k = 1:numel(V0)
     fprintf('LATERALE: C_f = %.3g, C_r = %.3g N/rad, K_us = %.2e; poli %s\n', LAT(k).Cf, LAT(k).Cr, LAT(k).K_us, ...
         mat2str(round(pole(LAT(k).Gr).', 2)));
     fprintf('r/delta:');  LAT(k).Gr   %#ok<NOPTS>
+    fprintf('ay/delta:');  LAT(k).Gay  %#ok<NOPTS>
+    fprintf('e_y/delta (errore laterale):');  LAT(k).Gey  %#ok<NOPTS>
     fprintf('LONGITUDINALE: %da marcia, %.0f rpm, m_eq %.0f kg, pedale di regime %.2f, dF/dpedale %.0f N, tau %.1f s\n', ...
         LON(k).gear, LON(k).rpm, LON(k).meq, LON(k).pedale0, LON(k).dFdp, LON(k).tau);
     fprintf('v/pedale:');  LON(k).Gped  %#ok<NOPTS>
@@ -183,6 +190,9 @@ lg = arrayfun(@(x) sprintf('%d m/s', x), V0, 'UniformOutput', false);
 figure('Name', 'Sterzo -> imbardata');
 subplot(1,2,1); hold on; for k = 1:numel(V0), bode(LAT(k).Gr); end; grid on; legend(lg); title('r/\delta');
 subplot(1,2,2); hold on; for k = 1:numel(V0), step(0.01*LAT(k).Gr, 0.6); end; grid on; title('r per \delta = 0.01 rad');
+figure('Name', 'Sterzo -> accelerazione ed errore laterale');
+subplot(1,2,1); hold on; for k = 1:numel(V0), bode(LAT(k).Gay); end; grid on; legend(lg); title('a_y/\delta');
+subplot(1,2,2); hold on; for k = 1:numel(V0), step(0.001*LAT(k).Gey, 1.5); end; grid on; title('e_y per \delta = 0.001 rad');
 figure('Name', 'Pedale e freni -> velocita''');
 subplot(1,2,1); hold on; for k = 1:numel(V0), step(0.05*LON(k).Gped, 5); end; grid on; legend(lg);
 title('\Deltav per pedale +0.05');
