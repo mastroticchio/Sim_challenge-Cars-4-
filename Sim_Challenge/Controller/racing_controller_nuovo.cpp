@@ -309,7 +309,7 @@ Command RacingController::Step(const VehicleState& st, double dt_hint) {
   if (have_prev_ && vx > 3.0) {
     // Already patched (from vx to vg)
     const double ds = std::hypot(st.x - prev_x_, st.y - prev_y_);
-    const double v_g = std::hypot(vx, vy)
+    const double vg = std::hypot(vx, vy);
     dt = std::clamp(ds / vg, 0.2 * dt_hint, 3.0 * dt_hint);
   }
   have_prev_ = true; prev_x_ = st.x; prev_y_ = st.y;
