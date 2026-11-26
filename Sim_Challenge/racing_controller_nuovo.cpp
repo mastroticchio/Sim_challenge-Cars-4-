@@ -335,10 +335,11 @@ Command RacingController::Step(const VehicleState& st, double dt_hint) {
   const double w = params.lat_omega, z = params.lat_zeta;
   const double gain = veh.L / (v_eff * v_eff);
   // Integral (anti-windup: clamp the contribution, freeze it at very low speed)
-  if (vx > 5.0) int_lat_ += e_y_p * dt;
-  const double int_max = params.lat_int_limit / std::max(gain * params.lat_ki, 1e-9);
-  int_lat_ = std::clamp(int_lat_, -int_max, int_max);
-  const double steer_fb = -gain * (w * w * e_y_p + 2.0 * z * w * e_y_dot_p + params.lat_ki * int_lat_);
+  if (vx > 5.0) {
+  int_lat_ += gain * params.lat_ki * e_y_p * dt; // ora int_lat_ è già in [rad]
+  }
+  int_lat_ = std::clamp(int_lat_, -params.lat_int_limit, params.lat_int_limit);
+  const double steer_fb = -gain * (w * w * e_y_p + 2.0 * z * w * e_y_dot_p) - int_lat_;
   cmd.steer = std::clamp(steer_ff + steer_fb, -params.steer_limit, params.steer_limit);
 
   // ---- 3) LONGITUDINAL: profile feedforward + PID on speed -> force -> pedal or brakes
