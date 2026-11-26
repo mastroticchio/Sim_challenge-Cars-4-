@@ -1,0 +1,30 @@
+/polimove:
+  base_software_control:
+    ros__parameters:
+      # Optimised racing line, 3 rows: X, Y, V  (same format as trajectory_db/reference_line.csv)
+      # A leading $HOME is replaced with your home directory
+      racing_line_file: "$HOME/sim_challenge/trajectory_db/traj_filo.csv"   # Yas Marina centre line
+      # false = ignore the csv speed row (reference_line.csv is capped at 60 km/h) and use only the grip limits
+      use_csv_speed: false
+
+      # NODE
+      control_rate_hz: 100.0          # [Hz] Main loop rate
+
+      # VEHICLE MODEL  (Yas Marina car)
+      vehicle:
+        mass: 720.0                 # [kg]                unchanged
+        lf: 1.760                   # [m] CoG to front axle unchanged
+        lr: 1.355                   # [m] CoG to rear axle  unchanged
+        h_cog: 0.358                # [m]                 unchanged
+        CdA: 1.194                  # [m^2]               unchanged (0.5 rho CdA = 0.7301)
+        ClfA: 2.038                 # [m^2]  Monza 1.832  (+11 %, aero balance moved forward)
+        ClrA: 1.736                 # [m^2]  Monza 1.948  (-11 %)
+        wheel_radius: 0.3109        # [m]    rear wheel
+        engine_brake_torque: -30.0  # [Nm]   E1, Monza -53.5
+        K_brake: 1.45e-4            # [Nm/Pa] per wheel, E3 (front 1.51e-4, rear 1.38e-4), Monza 1.36e-4
+        gear_ratios: [8.6894, 6.4416, 4.9733, 4.0048, 3.355, 2.9188]  # unchanged
+        mu0_f: 1.80                 # Magic Formula of the simulator, fs = 1: (PDY1 - PDY2*0.488)*LMUY 0.85
+        mu1_f: -0.10                # PDY2*LMUY*(Fz/FNOMIN)/mu0
+        mu0_r: 1.66                 # Magic Formula of the simulator, fs = 1: (PDY1 - PDY2*0.501)*LMUY 0.75
+        mu1_r: -0.11
+        k_us: -0.000508               # [rad s^2/m] Gradiente del sottosterzo stimato con linear regression

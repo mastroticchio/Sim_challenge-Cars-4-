@@ -1,0 +1,41 @@
+/polimove:
+  base_software_control:
+    ros__parameters:
+      # All of these can be changed live:  ros2 param set /polimove/base_software_control <name> <value>
+
+      # SPEED PROFILE
+      grip_scale: 0.700          # [-]    fraction of the identified tyre grip used by the speed profile (rebuilds the profile)
+      v_max: 80.0               # [m/s]  absolute speed cap
+
+      # LATERAL  (curvature feedforward + PID on the lateral error)
+      lat_omega: 2.534            # [rad/s] bandwidth of the lateral-error dynamics
+      lat_zeta: 1.072             # [-]     damping of the lateral-error dynamics
+      lat_ki: 0.117              # [1/s^3] integral gain on the lateral error
+      lat_int_limit: 0.02       # [rad]   max steering from the integral term
+      steer_limit: 0.32         # [rad]   the simulator saturates the wheel angle at ~0.321 rad
+      preview_time: 0.091        # [s]     actuator delay compensation
+      ff_lead_time: 0.027        # [s]     curvature feedforward read ahead
+
+      # LONGITUDINAL  (profile feedforward + PI on speed -> force -> inverse engine map / brakes)
+      lon_kp: 1.774               # [1/s]
+      lon_ki: 0.3               # [1/s^2]
+      lon_int_limit: 1.5        # [m/s^2]
+      lon_preview_time: 0.25    # [s]
+      brake_bias_front: 0.62    # [-]
+      traction_scale: 0.600      # [-]   rear grip given to traction (traction control)
+      abs_scale: 0.85           # [-]   tyre grip given to braking (anti-lock margin)
+      beta_cut: 0.08            # [rad] sideslip above which the throttle is cut
+      tc_slip: 0.078             # [-]   rear wheel slip above which the drive force is reduced
+      brake_front_max: 90.0     # [bar] per wheel
+      brake_rear_max: 50.0      # [bar] per wheel
+
+      # GEARSHIFT
+      upshift_rpm: 7800.0       # [rpm]
+      downshift_margin: 400.0   # [rpm] downshift when the lower gear would stay below 8000 - margin
+      shift_cooldown: 0.4       # [s]
+
+      # GAIN SET: false = our PIDs, true = PIDs of fdt_macchina.slx (team mate), same feedforward,
+      # profile, traction control, ABS and gearshift.  Can be switched live.
+      use_friend_gains: false
+
+      debug_log: false          # print a status line every 20 cycles
